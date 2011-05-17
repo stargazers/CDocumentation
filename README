@@ -1,0 +1,41 @@
+CDocumentation
+==============
+
+	Description:
+		PHP Class for parsing PHP files which have Doxygen like
+		comment blocks. This class is a helper class so we can create
+		a document generator which read comment blocks from PHP files
+		and creates a documentations.
+
+		Notice that this class is NOT meant to be as flexible as
+		a Doxygen is. This class works for my commenting style and
+		it is not meant to work with every different ways. So, this
+		basically works only when you have commenting style like this:
+
+			// ******************************************************
+			// someFunction
+			/*!
+				@brief Function that will create something.
+
+				@param $x This is the first parameter.
+
+				@param $y And here is another parameter.
+
+				@return Array
+			*/
+			// ******************************************************
+			public function someFunction( $x, $y )
+			{
+
+			}
+
+		Reason why I wrote this class was because I needed a documentation
+		generator from PHP files which uses Doxygen-like style but
+		does not require any application installations on servers.
+
+	License:
+		GNU AGPL
+
+	Author:
+		Aleksi Räsänen, 2011
+		aleksi.rasanen@runosydan.net
