@@ -229,6 +229,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		// *************************************************
 		private function cleanMethodCommentBlock( $comments )
 		{
+			$return_array = array();
+
 			foreach( $this->tags as $tag_name )
 			{
 				// We can have more than one params so skip it at this time
@@ -237,9 +239,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 				if( isset( $comments[$tag_name][0] ) )
 				{
+					$comment = $this->textToSafeHTML( 
+						$comments[$tag_name][0] );
+
 					$tag_without_at_char = substr( $tag_name, 1 );
-					$return_array[$tag_without_at_char] = 
-						$comments[$tag_name][0];
+					$return_array[$tag_without_at_char] = $comment;
 				}
 			}
 
@@ -260,6 +264,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			return $return_array;
 		}
 
+		// *************************************************
+		//	textToSafeHTML
+		/*!
+			@brief Make string to HTML safe, so this will replace
+			  < and > chars and make them to &lt; and &gt;
+
+			@param $data Data to make safe
+
+			@return String
+		*/
+		// *************************************************
+		private function textToSafeHTML( $data )
+		{
+			$data = str_replace( '<', '&lt;', $data );
+			$data = str_replace( '>', '&gt;', $data );
+
+			return $data;
+		}
 
 		// *************************************************
 		//	readFile
