@@ -166,6 +166,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 					if( isset( $ret[$current_tag][$i] ) )
 						$i++;
+					else
+						$i = 0;
 
 					$line_to_add = substr( $line, 
 						strlen( $tmp[0] ) + 1 ) . ' ';
