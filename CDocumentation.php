@@ -195,22 +195,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 			while( count( $comments = $this->getNextCommentBlock() ) != 0 )
 			{
-				$ret = $this->getNextNonCommentLine();
-				$ret = $this->parseNonCommentLine( $ret);
+				$next_non_comment_line = $this->getNextNonCommentLine();
+				$ret = $this->parseNonCommentLine( $next_non_comment_line );
 
 				if( $ret['name'] == '' )
 					continue;
 
 				$arr[$i] = $ret;
 
-				$ret = $this->parseCommentBlock( $comments );
-				$arr[$i]['comments'] = $ret;
+				$parsed_comment_block = $this->parseCommentBlock( 
+					$comments );
+				$cleaned_comment_block = $this->cleanMethodCommentBlock( 
+					$parsed_comment_block );
 
+				$arr[$i] = array_merge( $arr[$i], $cleaned_comment_block );
 				$i++;
 			}
 
 			return $arr;
 		}
+
+		// *************************************************
+		//	cleanMethodCommentBlock
+		/*!
+			@brief Read from $comments array 'comments' key
+			  and all its values and store them to own keys.
+			  For example $comments['@brief'][0] will be 
+			  in key 'brief' and so on.
+
+			@param $comments Array of comments where we haven't
+			  yet exploded tags and values.
+		*/
+		// *************************************************
+		private function cleanMethodCommentBlock( $comments )
+		{
+			foreach( $this->tags as $tag_name )
+			{
+				// We can have more than one params so skip it at this time
+				if( $tag_name == '@param' )
+					continue;
+
+				if( isset( $comments[$tag_name][0] ) )
+				{
+					$tag_without_at_char = substr( $tag_name, 1 );
+					$return_array[$tag_without_at_char] = 
+						$comments[$tag_name][0];
+				}
+			}
+
+			if( isset( $comments['@param'] ) )
+			{
+				for( $i=0; $i < count( $comments['@param'] ); $i++ )
+				{
+					$line = $comments['@param'][$i];
+					$tmp = explode( ' ', $line );
+					$param_name = $tmp[0];
+					$param_value = substr( $line, 
+						strlen( $param_name ) + 1 );
+
+					$return_array['param'][$param_name] = $param_value;
+				}
+			}
+
+			return $return_array;
+		}
+
 
 		// *************************************************
 		//	readFile
