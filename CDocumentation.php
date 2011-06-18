@@ -22,20 +22,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	//	CDocumentation
 	/*!
 		@brief Very simple document generator class
-
 		@copyright Aleksi Räsänen 2011
-
 		@author Aleksi Räsänen
-
 		@email aleksi.rasanen@runosydan.net
-
-		@license GNU AGPL
+		@license GNU AGPL v3
 	*/
 	// *************************************************
 	class CDocumentation
 	{
 		private $data;
 		private $current_position_in_file;
+		private $comment_start = '/*';
+		private $comment_end = '*/';
 		private $tags = array( 
 			'@brief', '@param', '@return', '@author',
 			'@copyright', '@email', '@license' );
@@ -46,14 +44,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			@brief Get next comment block from file.
 			  We know current position from class variable
 			  $current_position_in_file.
-
 			@return Array
 		*/
 		// *************************************************
 		private function getNextCommentBlock()
 		{
-			$comment_start = '/*';
-			$comment_end = '*/';
+			$comment_start = $this->comment_start;
+			$comment_end = $this->comment_end;
 			$block_started = false;
 			$comments = array();
 			$first_line = $this->current_position_in_file;
@@ -86,7 +83,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			  This is used when we want to get function, method,
 			  class name or whatever where last grabbed 
 			  comment belongs.
-			
 			@return String
 		*/
 		// *************************************************
@@ -114,7 +110,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			  This will read a line where is defined if
 			  this is a function, private/public method,
 			  class and so on.
-
 			@return Array
 		*/
 		// *************************************************
@@ -143,9 +138,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		/*!
 			@brief Parse comment block and pick variables
 			  and set values to them
-
 			@param $comments Comments array
-			
 			@return Array
 		*/
 		// *************************************************
@@ -222,7 +215,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			  and all its values and store them to own keys.
 			  For example $comments['@brief'][0] will be 
 			  in key 'brief' and so on.
-
 			@param $comments Array of comments where we haven't
 			  yet exploded tags and values.
 		*/
@@ -269,9 +261,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		/*!
 			@brief Make string to HTML safe, so this will replace
 			  < and > chars and make them to &lt; and &gt;
-
 			@param $data Data to make safe
-
 			@return String
 		*/
 		// *************************************************
@@ -288,7 +278,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		/*!
 			@brief Read file and store it content to
 			  class variable $data
-
 			@param $filename File to read
 		*/
 		// *************************************************
@@ -300,11 +289,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				$this->data[] = trim( $line );
 		}
 
+		// ************************************************** 
+		//  makeOneLineCommentsToMultiLineComments
+		/*!
+			@brief Change one liner comments to multiline comments
+			  so the parser won't fail.
+		*/
+		// ************************************************** 
+		private function makeOneLineCommentsToMultiLineComments()
+		{
+			$comment_start = $this->comment_start;
+			$comment_end = $this->comment_end;
+			$new_data = array();
+
+			foreach( $this->data as $current_line )
+			{
+				$first_chars = substr( $current_line, 0, 2 );
+				$last_chars = substr( $current_line, 
+					strlen( $current_line ) - strlen( $comment_end ),
+					strlen( $comment_end ) );
+
+				if( $first_chars == $comment_start 
+					&& $last_chars == $comment_end )
+				{
+					$actual_comment = substr( $current_line,
+						strlen( $comment_start ),
+						strlen( $current_line ) 
+							- strlen( $comment_start ) 
+							- strlen( $comment_end ) );
+
+					$new_data[] = $comment_start;
+					$new_data[] = trim( $actual_comment );
+					$new_data[] = $comment_end;
+				}
+				else
+				{
+					$new_data[] = $current_line;
+				}
+			}
+
+			$this->data = $new_data;
+		}
+
 		// *************************************************
 		//	getParsedData
 		/*!
 			@brief Returns parsed data from file
-
 			@return Array.
 		*/
 		// *************************************************
@@ -317,7 +347,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		//	__construct
 		/*!
 			@brief Get comments for class methods
-
 			@param $filename File to parse
 		*/
 		// *************************************************
@@ -328,6 +357,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 			$this->current_position_in_file = 0;
 			$this->readFile( $filename );
+			$this->makeOneLineCommentsToMultiLineComments();
 		}
 	}
 
